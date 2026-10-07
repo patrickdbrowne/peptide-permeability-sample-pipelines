@@ -1,0 +1,14 @@
+# notebooks/01_classical_ml.ipynb and scripts/download_cycpeptmpdb_3d.py (developed with Python 3.13)
+numpy
+pandas
+scipy
+scikit-learn
+xgboost
+lightgbm
+rdkit
+e3fp
+mmh3<5  # mmh3 5.x rejects the NumPy arrays that e3fp hashes
+matplotlib
+tqdm
+requests
+jupyter

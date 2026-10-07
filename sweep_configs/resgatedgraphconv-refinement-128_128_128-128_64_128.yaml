@@ -1,0 +1,64 @@
+# Stage 4: refinement for ResGatedGraphConv (128-128-128 GNN, 128-64-128 MLP head).
+# Narrows the stage-3 ranges around the best runs and adds dropout, early stopping and Kaiming
+# initialisation to the search.
+method: bayes
+name: 4-resgatedgraphconv-refinement-128_128_128-128_64_128
+run_cap: 50
+metric:
+  goal: maximize
+  name: R2
+
+parameters:
+  # Searched
+  batch_size:
+    value: 64
+  epochs:
+    value: 250
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-2
+  weight_decay:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-1
+  optimizer:
+    values: [nadam, adamw]
+  activation:
+    values: [elu, relu]
+  weight_init:             # "zero_grad" = PyTorch/PyG default; "kaiming" = Kaiming uniform
+    values: [zero_grad, kaiming]
+  early_stopping:          # 70/15/15 split; stop after `patience` epochs without improvement
+    values: [false, true]
+  dropout:
+    values: [0, 0.3, 0.5]
+
+  # Fixed
+  gnn_type:
+    value: resgatedgraphconv
+  architecture:            # GNN layer widths
+    value: "128_128_128"
+  mlp_architecture:        # MLP-head hidden widths
+    value: "128_64_128"
+  fingerprint_type:        # fuse ECFP4 with the pooled graph embedding
+    value: "ecfp"
+  patience:
+    value: 20
+  min_delta:
+    value: 0.0001
+
+  # Operator-specific settings (unused by ResGatedGraphConv)
+  attention_heads_l1:      # heads per GNN layer for the attention operators
+    value: 0
+  attention_heads_l2:
+    value: 0
+  attention_heads_l3:
+    value: 0
+  K_hops:                  # ChebConv, SGConv, TAGConv, SSGConv
+    value: 2
+  arma_num_stacks:         # ARMAConv
+    value: 1
+  arma_num_layers:
+    value: 1
+  ssg_alpha:               # SSGConv teleport probability
+    value: 0.1

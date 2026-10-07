@@ -1,0 +1,64 @@
+# Stage 4: refinement for LEConv (128-64-32 GNN, 128-64-32 MLP head).
+# Narrows the stage-3 ranges around the best runs and adds dropout, early stopping and Kaiming
+# initialisation to the search.
+method: bayes
+name: 4-leconv-refinement-128_64_32-128_64_32
+run_cap: 50
+metric:
+  goal: maximize
+  name: R2
+
+parameters:
+  # Searched
+  batch_size:
+    value: 64
+  epochs:
+    values: [100, 150]
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-4
+    max: 1e-1
+  weight_decay:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-2
+  optimizer:
+    values: [adadelta, adagrad]
+  activation:
+    value: gelu
+  weight_init:             # "zero_grad" = PyTorch/PyG default; "kaiming" = Kaiming uniform
+    values: [zero_grad, kaiming]
+  early_stopping:          # 70/15/15 split; stop after `patience` epochs without improvement
+    values: [false, true]
+  dropout:
+    values: [0, 0.3, 0.5]
+
+  # Fixed
+  gnn_type:
+    value: leconv
+  architecture:            # GNN layer widths
+    value: "128_64_32"
+  mlp_architecture:        # MLP-head hidden widths
+    value: "128_64_32"
+  fingerprint_type:        # fuse ECFP4 with the pooled graph embedding
+    value: "ecfp"
+  patience:
+    value: 20
+  min_delta:
+    value: 0.0001
+
+  # Operator-specific settings (unused by LEConv)
+  attention_heads_l1:      # heads per GNN layer for the attention operators
+    value: 0
+  attention_heads_l2:
+    value: 0
+  attention_heads_l3:
+    value: 0
+  K_hops:                  # ChebConv, SGConv, TAGConv, SSGConv
+    value: 2
+  arma_num_stacks:         # ARMAConv
+    value: 1
+  arma_num_layers:
+    value: 1
+  ssg_alpha:               # SSGConv teleport probability
+    value: 0.1

@@ -1,0 +1,87 @@
+# Stage 1: compare 17 PyTorch Geometric message-passing operators.
+# Every operator gets the same 3 x 128 GNN (each residue sees its 3-hop neighbourhood) and a linear
+# head, so differences come from the operator; learning rate, weight decay, optimiser and activation
+# are searched jointly.
+method: bayes
+name: 1-gnn-type
+run_cap: 100
+metric:
+  goal: maximize
+  name: R2
+
+parameters:
+  # Searched
+  gnn_type:
+    values:
+      # neighbourhood aggregation
+      - gcnconv
+      - sageconv
+      - graphconv
+      - resgatedgraphconv
+      - clustergcnconv
+      - leconv
+      - genconv
+      - mfconv
+      # attention
+      - gatconv
+      - gatv2conv
+      - transformerconv
+      - supergatconv
+      # spectral / multi-hop filters
+      - chebconv
+      - sgconv
+      - tagconv
+      - armaconv
+      - ssgconv
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-1
+  weight_decay:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-1
+  optimizer:
+    values: [adamw, sgd]
+  activation:
+    values: [elu, relu]
+
+  # Fixed
+  architecture:            # GNN layer widths
+    value: "128_128_128"
+  mlp_architecture:        # "0" = single linear layer
+    value: "0"
+  fingerprint_type:        # fuse ECFP4 with the pooled graph embedding
+    value: "ecfp"
+  batch_size:
+    value: 128
+  epochs:
+    value: 200
+  weight_init:             # "zero_grad" = PyTorch/PyG default initialisation
+    values: [zero_grad]
+  max_grad_norm:           # gradient clipping, so unstable operators don't diverge to NaN losses
+    value: 1.0
+  dropout:
+    value: 0
+  early_stopping:
+    value: false
+  patience:
+    value: 0
+  min_delta:
+    value: 0
+
+  # Operator-specific settings (only read by the operators that use them)
+  attention_heads_l1:      # heads per GNN layer for the attention operators
+    value: 4
+  attention_heads_l2:
+    value: 4
+  attention_heads_l3:
+    value: 4
+  K_hops:                  # ChebConv, SGConv, TAGConv, SSGConv
+    value: 2
+  arma_num_stacks:         # ARMAConv
+    value: 1
+  arma_num_layers:
+    value: 1
+  ssg_alpha:               # SSGConv teleport probability
+    value: 0.1

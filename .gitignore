@@ -1,0 +1,18 @@
+# Data: CycPeptMPDB files and the caches the notebooks derive from them (see README)
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Weights & Biases local run files
+wandb/
+
+# macOS
+.DS_Store
+

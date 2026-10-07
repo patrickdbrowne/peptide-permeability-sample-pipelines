@@ -1,0 +1,63 @@
+# Stage 2: architecture search for ResGatedGraphConv, one of the operators shortlisted in stage 1.
+# Searches the GNN and MLP-head depth/width alongside the stage-1 hyperparameters.
+method: bayes
+name: 2-resgatedgraphconv-parameters
+run_cap: 100
+metric:
+  goal: maximize
+  name: R2
+
+parameters:
+  # Searched
+  architecture:            # GNN layer widths
+    values: ["128", "128_128", "128_64", "128_128_128", "128_64_32", "128_64_128"]
+  mlp_architecture:        # MLP-head hidden widths; "0" = single linear layer
+    values: ["0", "128", "128_128", "128_64", "128_128_128", "128_64_32", "128_64_128"]
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-1
+  weight_decay:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-1
+  optimizer:
+    values: [adamw, sgd]
+  activation:
+    values: [elu, relu]
+
+  # Fixed
+  gnn_type:
+    value: resgatedgraphconv
+  fingerprint_type:        # fuse ECFP4 with the pooled graph embedding
+    value: "ecfp"
+  batch_size:
+    value: 128
+  epochs:
+    value: 200
+  weight_init:             # "zero_grad" = PyTorch/PyG default initialisation
+    values: [zero_grad]
+  dropout:
+    value: 0
+  early_stopping:
+    value: false
+  patience:
+    value: 0
+  min_delta:
+    value: 0
+
+  # Operator-specific settings (unused by ResGatedGraphConv)
+  attention_heads_l1:      # heads per GNN layer for the attention operators
+    value: 0
+  attention_heads_l2:
+    value: 0
+  attention_heads_l3:
+    value: 0
+  K_hops:                  # ChebConv, SGConv, TAGConv, SSGConv
+    value: 2
+  arma_num_stacks:         # ARMAConv
+    value: 1
+  arma_num_layers:
+    value: 1
+  ssg_alpha:               # SSGConv teleport probability
+    value: 0.1
